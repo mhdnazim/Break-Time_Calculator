@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Break Time Calculator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    h2 {
+        color: #333;
+    }
+
+    textarea {
+        width: 100%;
+        max-width: 400px;
+        height: 180px;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        resize: none;
+    }
+
+    button {
+        margin-top: 15px;
+        padding: 10px 25px;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+    #results {
+        margin-top: 20px;
+        padding: 15px 20px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        font-size: 16px;
+        color: #333;
+        max-width: 400px;
+        width: 100%;
+        word-wrap: break-word;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+    }
+</style>
+</head>
+<body>
+
+<h2>Break/Out Time Calculator</h2>
+
+<label>Enter time logs line by line (HH:MM:SS AM/PM [tab] In/Out)</label>
+<textarea id="timelogs" placeholder="08:40:01 AM	In
+10:38:43 AM	Out
+10:43:02 AM	In"></textarea><br>
+
+<button onclick="calculateBreaks()">Calculate Break Time</button>
+
+<div id="results"></div>
+
+<script>
+function parseTime(t) {
+    const [time, meridiem] = t.split(' ');
+    let [h, m, s] = time.split(':').map(Number);
+    if(meridiem === 'PM' && h < 12) h += 12;
+    if(meridiem === 'AM' && h === 12) h = 0;
+    return h*3600 + m*60 + s;
+}
+
+function formatTime(sec) {
+    const h = Math.floor(sec / 3600);
+    sec %= 3600;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${h}h ${m}m ${s}s`;
+}
+
+function calculateBreaks() {
+    const lines = document.getElementById('timelogs').value.trim().split('\n');
+    let events = lines.map(l => l.split('\t').map(s => s.trim()));
+
+    let totalBreak = 0;
+
+    for(let i = 0; i < events.length; i++) {
+        if(events[i][1].toLowerCase() === "out" && i+1 < events.length && events[i+1][1].toLowerCase() === "in") {
+            const outTime = parseTime(events[i][0]);
+            const inTime = parseTime(events[i+1][0]);
+            totalBreak += inTime - outTime;
+        }
+    }
+
+    document.getElementById('results').innerHTML = `
+        <strong>Total break/out time:</strong> ${formatTime(totalBreak)}
+    `;
+}
+</script>
+
+</body>
+</html>
