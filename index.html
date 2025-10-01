@@ -6,9 +6,11 @@
 <link rel="icon" href="https://res.cloudinary.com/dmpun7unq/image/upload/v1759304400/break-time-text-button-break-time-sign-icon-label-sticker-web-buttons-vector_jvbrto.png" type="image/png">
 <title>Break Time Calculator</title>
 <style>
+    /* Light theme default */
     body {
         font-family: Arial, sans-serif;
         background: #f0f2f5;
+        color: #333;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -16,7 +18,7 @@
     }
 
     h2 {
-        color: #333;
+        margin-bottom: 20px;
     }
 
     textarea {
@@ -49,7 +51,7 @@
     #results {
         margin-top: 20px;
         padding: 15px 20px;
-        background: white;
+        background: #fff;
         border-radius: 6px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         font-size: 16px;
@@ -72,6 +74,45 @@
     .within-limit {
         color: green;
         font-weight: bold;
+    }
+
+    ::placeholder {
+        color: #aaa;
+    }
+
+    /* Dark theme styles */
+    body.dark-mode {
+        background: #121212;
+        color: #e0e0e0;
+    }
+
+    body.dark-mode textarea {
+        background: #1e1e1e;
+        color: #e0e0e0;
+        border: 1px solid #333;
+    }
+
+    body.dark-mode #results {
+        background: #1e1e1e;
+        color: #e0e0e0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    body.dark-mode button {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    body.dark-mode button:hover {
+        background-color: #45a049;
+    }
+
+    body.dark-mode .over-limit {
+        color: #ff4d4d;
+    }
+
+    body.dark-mode .within-limit {
+        color: #4CAF50;
     }
 </style>
 </head>
@@ -106,7 +147,7 @@ function formatTime(sec) {
 }
 
 function formatClockTime(sec) {
-    sec = sec % (24*3600); // wrap around 24 hours
+    sec = sec % (24*3600);
     const h24 = Math.floor(sec / 3600);
     sec %= 3600;
     const m = Math.floor(sec / 60);
@@ -134,9 +175,8 @@ function calculateBreaks() {
         }
     }
 
-    const allowedBreak = 45 * 60; // 45 minutes
-    const warningThreshold = allowedBreak + 15 * 60; // 60 minutes
-
+    const allowedBreak = 45 * 60; 
+    const warningThreshold = allowedBreak + 15 * 60; 
     const remaining = allowedBreak - totalBreak;
 
     let remainingMsg = "";
@@ -146,7 +186,6 @@ function calculateBreaks() {
         remainingMsg = `<span class="over-limit">Exceeded break time by: ${formatTime(totalBreak - allowedBreak)}</span>`;
     }
 
-    // calculate exit time by adding 8h 45m to first In time
     let exitTime = firstInTime !== null ? formatClockTime(firstInTime + 8*3600 + 45*60) : 'N/A';
 
     document.getElementById('results').innerHTML = `
@@ -154,6 +193,12 @@ function calculateBreaks() {
         ${remainingMsg}<br>
         <strong>Expected exit time:</strong> ${exitTime}
     `;
+}
+
+// Check URL param for dark mode
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
 }
 </script>
 
