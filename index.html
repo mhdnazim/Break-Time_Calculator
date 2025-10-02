@@ -6,7 +6,6 @@
 <link rel="icon" href="https://res.cloudinary.com/dmpun7unq/image/upload/v1759304400/break-time-text-button-break-time-sign-icon-label-sticker-web-buttons-vector_jvbrto.png" type="image/png">
 <title>Break Time Calculator</title>
 <style>
-    /* Light theme default */
     body {
         font-family: Arial, sans-serif;
         background: #f0f2f5;
@@ -76,6 +75,21 @@
         font-weight: bold;
     }
 
+    .exit-time {
+        font-weight: bold;
+        color: #0077cc;
+    }
+
+    .productive-good {
+        color: green;
+        font-weight: bold;
+    }
+
+    .productive-bad {
+        color: red;
+        font-weight: bold;
+    }
+
     ::placeholder {
         color: #aaa;
     }
@@ -114,6 +128,18 @@
     body.dark-mode .within-limit {
         color: #4CAF50;
     }
+
+    body.dark-mode .exit-time {
+        color: #66b3ff;
+    }
+
+    body.dark-mode .productive-good {
+        color: #4CAF50;
+    }
+
+    body.dark-mode .productive-bad {
+        color: #ff4d4d;
+    }
 </style>
 </head>
 <body>
@@ -139,6 +165,7 @@ function parseTime(t) {
 }
 
 function formatTime(sec) {
+    if (sec < 0) sec = 0;
     const h = Math.floor(sec / 3600);
     sec %= 3600;
     const m = Math.floor(sec / 60);
@@ -186,12 +213,38 @@ function calculateBreaks() {
         remainingMsg = `<span class="over-limit">Exceeded break time by: ${formatTime(totalBreak - allowedBreak)}</span>`;
     }
 
-    let exitTime = firstInTime !== null ? formatClockTime(firstInTime + 8*3600 + 45*60) : 'N/A';
+    let exitTime = 'N/A';
+    if (firstInTime !== null) {
+        if (totalBreak <= allowedBreak) {
+            exitTime = formatClockTime(firstInTime + (8*3600 + 45*60));
+        } else {
+            exitTime = formatClockTime(firstInTime + (8*3600) + totalBreak);
+        }
+    }
+
+    // Productive hours + time left for 8h (value colors only)
+    let productiveMsg = '';
+    let timeLeftMsg = '';
+    if (firstInTime !== null) {
+        const now = new Date();
+        const nowSec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+        const productive = (nowSec - firstInTime) - totalBreak;
+
+        if (productive < 8*3600) {
+            productiveMsg = `Productive hours: <span class="productive-bad">${formatTime(productive)}</span>`;
+            timeLeftMsg = `Time left for 8h: <span class="productive-bad">${formatTime((8*3600) - productive)}</span>`;
+        } else {
+            productiveMsg = `Productive hours: <span class="productive-good">${formatTime(productive)}</span>`;
+            timeLeftMsg = `<span class="productive-good">✅ 8h productive time completed</span>`;
+        }
+    }
 
     document.getElementById('results').innerHTML = `
         <strong>Total break/out time:</strong> ${formatTime(totalBreak)}<br>
         ${remainingMsg}<br>
-        <strong>Expected exit time:</strong> ${exitTime}
+        <strong class="exit-time">Expected exit time:</strong> ${exitTime}<br>
+        ${productiveMsg}<br>
+        ${timeLeftMsg}
     `;
 }
 
